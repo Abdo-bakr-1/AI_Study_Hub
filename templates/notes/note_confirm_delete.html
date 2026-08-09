@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Delete note — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Delete Note{% endblock %}
+{% block nav_notes %}active{% endblock %}
+
+{% block content %}
+<div class="narrow">
+    <section class="card confirm-card">
+        <div class="confirm-icon">🗑</div>
+        <h3>Delete this note?</h3>
+        <p>You are about to delete <strong>{{ note.title }}</strong>. This action cannot be undone.</p>
+        <form method="post" class="form-actions center">
+            {% csrf_token %}
+            <a href="{% url 'notes:detail' note.pk %}" class="btn btn-ghost">Cancel</a>
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

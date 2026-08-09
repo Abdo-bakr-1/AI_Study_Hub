@@ -1,0 +1,98 @@
+{% load static %}{% load core_extras %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
+    <meta name="description" content="{{ SITE_TAGLINE }}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <!-- Apply saved theme before paint to avoid a flash of the wrong theme -->
+    <script>
+        (function () {
+            var t = localStorage.getItem('theme');
+            if (t) document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated %}
+<div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-mark">AI</span>
+            <span class="brand-text">Study Hub</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'dashboard:home' %}" class="nav-link {% block nav_dashboard %}{% endblock %}">
+                <span class="nav-icon">▚</span> Dashboard
+            </a>
+            <a href="{% url 'planner:task_list' %}" class="nav-link {% block nav_tasks %}{% endblock %}">
+                <span class="nav-icon">✓</span> Tasks
+            </a>
+            <a href="{% url 'notes:list' %}" class="nav-link {% block nav_notes %}{% endblock %}">
+                <span class="nav-icon">✎</span> Notes
+            </a>
+            <a href="{% url 'resources:list' %}" class="nav-link {% block nav_resources %}{% endblock %}">
+                <span class="nav-icon">▤</span> Resources
+            </a>
+            <a href="{% url 'ai_assistant:chat' %}" class="nav-link {% block nav_ai %}{% endblock %}">
+                <span class="nav-icon">✦</span> AI Assistant
+            </a>
+            <a href="{% url 'accounts:profile' %}" class="nav-link {% block nav_profile %}{% endblock %}">
+                <span class="nav-icon">◕</span> Profile
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost btn-block">Log out</button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main-area">
+        <header class="topbar">
+            <button class="icon-btn" id="sidebarToggle" aria-label="Toggle menu">☰</button>
+            <div class="topbar-title">{% block page_title %}{{ SITE_NAME }}{% endblock %}</div>
+            <div class="topbar-actions">
+                <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark mode">◐</button>
+                <a href="{% url 'accounts:profile' %}" class="user-chip">
+                    <img src="{{ user.profile.image_url }}" alt="avatar" class="user-avatar">
+                    <span class="user-name">{{ user.username }}</span>
+                </a>
+            </div>
+        </header>
+
+        <main class="content">
+            {% include "includes/messages.html" %}
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <span>&copy; {% now "Y" %} {{ SITE_NAME }}</span>
+        </footer>
+    </div>
+</div>
+{% else %}
+<div class="auth-shell">
+    <header class="auth-topbar">
+        <a href="{% url 'core:home' %}" class="auth-brand">
+            <span class="brand-mark">AI</span> {{ SITE_NAME }}
+        </a>
+        <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">◐</button>
+    </header>
+    <main class="auth-main">
+        {% include "includes/messages.html" %}
+        {% block auth_content %}{% endblock %}
+    </main>
+</div>
+{% endif %}
+
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

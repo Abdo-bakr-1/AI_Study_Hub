@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}Tasks — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Study Planner{% endblock %}
+{% block nav_tasks %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2 class="page-heading">Tasks</h2>
+        <p class="page-subtitle">{{ total_count }} task{{ total_count|pluralize }}</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'planner:category_list' %}" class="btn btn-ghost">Categories</a>
+        <a href="{% url 'planner:task_create' %}" class="btn btn-primary">+ Add Task</a>
+    </div>
+</div>
+
+<!-- Filters -->
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search tasks..." class="form-control">
+    <select name="status" class="form-control">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <select name="priority" class="form-control">
+        <option value="">All priorities</option>
+        {% for value, label in priority_choices %}
+        <option value="{{ value }}" {% if current_priority == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <select name="category" class="form-control">
+        <option value="">All categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if current_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-secondary">Filter</button>
+    {% if query or current_status or current_priority or current_category %}
+    <a href="{% url 'planner:task_list' %}" class="btn btn-ghost">Reset</a>
+    {% endif %}
+</form>
+
+{% if tasks %}
+<div class="table-wrap">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Status</th>
+                <th>Title</th>
+                <th>Priority</th>
+                <th>Due date</th>
+                <th>Categories</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in tasks %}
+            <tr class="{% if task.is_completed %}row-done{% endif %}">
+                <td>
+                    <form method="post" action="{% url 'planner:task_toggle' task.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="check-btn {% if task.is_completed %}checked{% endif %}"
+                                title="Toggle complete">{% if task.is_completed %}✓{% endif %}</button>
+                    </form>
+                </td>
+                <td><a href="{% url 'planner:task_detail' task.pk %}" class="cell-title">{{ task.title }}</a></td>
+                <td><span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
+                <td>
+                    {% if task.due_date %}
+                        <span class="{% if task.is_overdue %}text-danger{% endif %}">{{ task.due_date|date:"M d, Y" }}</span>
+                    {% else %}<span class="muted">—</span>{% endif %}
+                </td>
+                <td>
+                    {% for cat in task.categories.all %}<span class="chip">{{ cat.name }}</span>{% empty %}<span class="muted">—</span>{% endfor %}
+                </td>
+                <td class="row-actions">
+                    <a href="{% url 'planner:task_edit' task.pk %}" class="btn-icon" title="Edit">✎</a>
+                    <a href="{% url 'planner:task_delete' task.pk %}" class="btn-icon danger" title="Delete">🗑</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% with querystring=request.GET.urlencode %}{% endwith %}
+<nav class="pagination" aria-label="Pagination">
+    {% if page_obj.has_previous %}
+        <a class="page-btn" href="?{% query_transform page=page_obj.previous_page_number %}">&laquo; Prev</a>
+    {% endif %}
+    <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a class="page-btn" href="?{% query_transform page=page_obj.next_page_number %}">Next &raquo;</a>
+    {% endif %}
+</nav>
+{% else %}
+<div class="empty-block">
+    <div class="empty-icon">✓</div>
+    <h3>No tasks found</h3>
+    <p>Create your first task to start planning your study.</p>
+    <a href="{% url 'planner:task_create' %}" class="btn btn-primary">+ Add Task</a>
+</div>
+{% endif %}
+{% endblock %}

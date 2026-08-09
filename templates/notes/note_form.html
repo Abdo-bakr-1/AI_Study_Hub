@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block nav_notes %}active{% endblock %}
+
+{% block content %}
+<div class="narrow">
+    <section class="card">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Title</label>
+                {{ form.title }}
+                {{ form.title.errors }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.content.id_for_label }}">Content</label>
+                {{ form.content }}
+                {{ form.content.errors }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.image.id_for_label }}">Image (optional)</label>
+                {{ form.image }}
+                {{ form.image.errors }}
+                {% if note.image %}<small class="form-help">Current: {{ note.image.name }}</small>{% endif %}
+            </div>
+            <div class="form-group">
+                <label>Categories</label>
+                <div class="checkbox-grid">{{ form.categories }}</div>
+                <small class="form-help">Manage categories from the <a href="{% url 'notes:category_list' %}">Categories</a> page.</small>
+            </div>
+            <div class="form-actions">
+                <a href="{% url 'notes:list' %}" class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Note</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

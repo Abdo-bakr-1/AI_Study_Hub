@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block nav_tasks %}active{% endblock %}
+
+{% block content %}
+<div class="narrow">
+    <section class="card">
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="alert alert-error">{{ form.non_field_errors }}</div>{% endif %}
+
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Title</label>
+                {{ form.title }}
+                {{ form.title.errors }}
+            </div>
+            <div class="form-group">
+                <label for="{{ form.description.id_for_label }}">Description</label>
+                {{ form.description }}
+                {{ form.description.errors }}
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.due_date.id_for_label }}">Due date</label>
+                    {{ form.due_date }}
+                    {{ form.due_date.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.priority.id_for_label }}">Priority</label>
+                    {{ form.priority }}
+                    {{ form.priority.errors }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}">Status</label>
+                    {{ form.status }}
+                    {{ form.status.errors }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Categories</label>
+                <div class="checkbox-grid">{{ form.categories }}</div>
+                <small class="form-help">Manage categories from the <a href="{% url 'planner:category_list' %}">Categories</a> page.</small>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'planner:task_list' %}" class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Task</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

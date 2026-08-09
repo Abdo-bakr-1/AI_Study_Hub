@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Access denied — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}403{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-code">403</div>
+    <h2>Access denied</h2>
+    <p>You don't have permission to view this page.</p>
+    <a href="{% url 'dashboard:home' %}" class="btn btn-primary">Back to dashboard</a>
+</div>
+{% endblock %}
+
+{% block auth_content %}
+<div class="error-page">
+    <div class="error-code">403</div>
+    <h2>Access denied</h2>
+    <p>You don't have permission to view this page.</p>
+    <a href="{% url 'core:home' %}" class="btn btn-primary">Go home</a>
+</div>
+{% endblock %}

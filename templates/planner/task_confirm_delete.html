@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Delete task — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Delete Task{% endblock %}
+{% block nav_tasks %}active{% endblock %}
+
+{% block content %}
+<div class="narrow">
+    <section class="card confirm-card">
+        <div class="confirm-icon">🗑</div>
+        <h3>Delete this task?</h3>
+        <p>You are about to delete <strong>{{ task.title }}</strong>. This action cannot be undone.</p>
+        <form method="post" class="form-actions center">
+            {% csrf_token %}
+            <a href="{% url 'planner:task_detail' task.pk %}" class="btn btn-ghost">Cancel</a>
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </form>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,7 @@
+# AI Study Hub — Python dependencies
+Django==5.1.15
+psycopg2-binary==2.9.12
+django-environ==0.14.0
+Pillow==12.3.0
+reportlab==5.0.0
+requests==2.34.2

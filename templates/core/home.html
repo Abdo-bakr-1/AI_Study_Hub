@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{{ SITE_NAME }} — {{ SITE_TAGLINE }}{% endblock %}
+
+{% block auth_content %}
+<section class="landing">
+    <div class="landing-hero">
+        <h1 class="landing-title">Organize your study life with an <span class="accent">AI assistant</span></h1>
+        <p class="landing-sub">{{ SITE_NAME }} brings your tasks, notes, and learning resources together
+            in one clean dashboard — plus a built-in AI study assistant to help you learn faster.</p>
+        <div class="landing-actions">
+            <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">Get started free</a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-lg">Log in</a>
+        </div>
+    </div>
+    <div class="landing-features">
+        <div class="feature-card">
+            <div class="feature-icon">✓</div>
+            <h3>Study Planner</h3>
+            <p>Create tasks with priorities, due dates and categories. Track pending vs completed.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">✎</div>
+            <h3>Smart Notes</h3>
+            <p>Write notes, organize by category, live-search instantly and export to PDF.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">▤</div>
+            <h3>Resources</h3>
+            <p>Save articles, videos, courses and books with clean, safe links.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">✦</div>
+            <h3>AI Assistant</h3>
+            <p>Ask questions, get study plans, summaries, flashcards and practice questions.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}Resources — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Learning Resources{% endblock %}
+{% block nav_resources %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2 class="page-heading">Resources</h2>
+        <p class="page-subtitle">{{ total_count }} resource{{ total_count|pluralize }}</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'resources:category_list' %}" class="btn btn-ghost">Categories</a>
+        <a href="{% url 'resources:create' %}" class="btn btn-primary">+ Add Resource</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search resources..." class="form-control">
+    <select name="type" class="form-control">
+        <option value="">All types</option>
+        {% for value, label in type_choices %}
+        <option value="{{ value }}" {% if current_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-secondary">Filter</button>
+    {% if query or current_type %}<a href="{% url 'resources:list' %}" class="btn btn-ghost">Reset</a>{% endif %}
+</form>
+
+{% if resources %}
+<div class="resource-grid">
+    {% for resource in resources %}
+    <article class="resource-card">
+        <div class="resource-top">
+            <span class="badge badge-type">{{ resource.get_resource_type_display }}</span>
+            <div class="note-actions">
+                <a href="{% url 'resources:edit' resource.pk %}" class="btn-icon" title="Edit">✎</a>
+                <a href="{% url 'resources:delete' resource.pk %}" class="btn-icon danger" title="Delete">🗑</a>
+            </div>
+        </div>
+        <h3 class="resource-title"><a href="{% url 'resources:detail' resource.pk %}">{{ resource.title }}</a></h3>
+        {% if resource.description %}<p class="resource-desc">{{ resource.description|truncatewords:20 }}</p>{% endif %}
+        <a href="{{ resource.link }}" class="resource-link" target="_blank" rel="noopener noreferrer nofollow">Open link ↗</a>
+    </article>
+    {% endfor %}
+</div>
+
+<nav class="pagination" aria-label="Pagination">
+    {% if page_obj.has_previous %}
+        <a class="page-btn" href="?{% query_transform page=page_obj.previous_page_number %}">&laquo; Prev</a>
+    {% endif %}
+    <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a class="page-btn" href="?{% query_transform page=page_obj.next_page_number %}">Next &raquo;</a>
+    {% endif %}
+</nav>
+{% else %}
+<div class="empty-block">
+    <div class="empty-icon">▤</div>
+    <h3>No resources yet</h3>
+    <p>Save your first learning resource.</p>
+    <a href="{% url 'resources:create' %}" class="btn btn-primary">+ Add Resource</a>
+</div>
+{% endif %}
+{% endblock %}

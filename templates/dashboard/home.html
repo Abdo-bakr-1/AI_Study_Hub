@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<!-- Quick actions -->
+<div class="quick-actions">
+    <a href="{% url 'planner:task_create' %}" class="btn btn-primary">+ Add Task</a>
+    <a href="{% url 'notes:create' %}" class="btn btn-secondary">+ Add Note</a>
+    <a href="{% url 'resources:create' %}" class="btn btn-secondary">+ Add Resource</a>
+    <a href="{% url 'ai_assistant:chat' %}" class="btn btn-accent">✦ Open AI Assistant</a>
+</div>
+
+<!-- Statistics cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total_tasks }}</div>
+        <div class="stat-label">Total Tasks</div>
+    </div>
+    <div class="stat-card stat-success">
+        <div class="stat-value">{{ stats.completed_tasks }}</div>
+        <div class="stat-label">Completed</div>
+    </div>
+    <div class="stat-card stat-warning">
+        <div class="stat-value">{{ stats.pending_tasks }}</div>
+        <div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-card stat-info">
+        <div class="stat-value">{{ stats.total_notes }}</div>
+        <div class="stat-label">Notes</div>
+    </div>
+    <div class="stat-card stat-purple">
+        <div class="stat-value">{{ stats.total_resources }}</div>
+        <div class="stat-label">Resources</div>
+    </div>
+</div>
+
+<div class="dashboard-columns">
+    <!-- Charts -->
+    <section class="card">
+        <h3 class="card-title">Task Status</h3>
+        <canvas id="taskStatusChart" height="220"></canvas>
+    </section>
+    <section class="card">
+        <h3 class="card-title">Tasks by Priority</h3>
+        <canvas id="taskPriorityChart" height="220"></canvas>
+    </section>
+    <section class="card">
+        <h3 class="card-title">Notes by Category</h3>
+        <canvas id="notesCategoryChart" height="220"></canvas>
+    </section>
+</div>
+
+<div class="dashboard-columns">
+    <!-- Upcoming tasks -->
+    <section class="card">
+        <h3 class="card-title">Upcoming Tasks</h3>
+        {% if upcoming_tasks %}
+        <ul class="mini-list">
+            {% for task in upcoming_tasks %}
+            <li>
+                <a href="{% url 'planner:task_detail' task.pk %}">{{ task.title }}</a>
+                <span class="badge badge-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                <span class="mini-date">{{ task.due_date|date:"M d" }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">No upcoming tasks. Enjoy the calm! 🎉</p>
+        {% endif %}
+        {% if stats.overdue_tasks %}
+        <p class="text-danger">You have {{ stats.overdue_tasks }} overdue task(s).</p>
+        {% endif %}
+    </section>
+
+    <!-- Recent activity -->
+    <section class="card">
+        <h3 class="card-title">Recent Activity</h3>
+        {% if recent_activity %}
+        <ul class="activity-list">
+            {% for log in recent_activity %}
+            <li class="activity-item">
+                <span class="activity-dot activity-{{ log.action }}"></span>
+                <div>
+                    <div class="activity-desc">{{ log.description }}</div>
+                    <div class="activity-time">{{ log.created_at|timesince }} ago</div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="empty-state">No activity yet. Start by adding a task or note.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script id="charts-data" type="application/json">{{ charts_json|safe }}</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+{% endblock %}

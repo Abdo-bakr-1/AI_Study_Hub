@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load core_extras %}
+
+{% block title %}Notes — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}Notes{% endblock %}
+{% block nav_notes %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2 class="page-heading">Notes</h2>
+        <p class="page-subtitle">{{ total_count }} note{{ total_count|pluralize }}</p>
+    </div>
+    <div class="page-header-actions">
+        <a href="{% url 'notes:export_pdf' %}" class="btn btn-ghost">⤓ Export PDF</a>
+        <a href="{% url 'notes:category_list' %}" class="btn btn-ghost">Categories</a>
+        <a href="{% url 'notes:create' %}" class="btn btn-primary">+ Add Note</a>
+    </div>
+</div>
+
+<!-- Server filter (category) + client live search -->
+<form method="get" class="filter-bar" id="notesFilterForm">
+    <input type="text" id="noteSearch" name="q" value="{{ query }}" placeholder="Live search notes..." class="form-control" autocomplete="off">
+    <select name="category" class="form-control" onchange="this.form.submit()">
+        <option value="">All categories</option>
+        {% for cat in categories %}
+        <option value="{{ cat.id }}" {% if current_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+    </select>
+    <noscript><button type="submit" class="btn btn-secondary">Search</button></noscript>
+</form>
+
+{% if notes %}
+<div class="notes-grid" id="notesGrid">
+    {% for note in notes %}
+    <article class="note-card" data-title="{{ note.title|lower }}" data-content="{{ note.content|lower|truncatechars:400 }}">
+        <a href="{% url 'notes:detail' note.pk %}" class="note-card-link">
+            <h3 class="note-title">{{ note.title }}</h3>
+            <p class="note-excerpt">{{ note.content|truncatewords:24 }}</p>
+        </a>
+        <div class="note-card-footer">
+            <div class="note-cats">
+                {% for cat in note.categories.all %}<span class="chip">{{ cat.name }}</span>{% endfor %}
+            </div>
+            <div class="note-actions">
+                <a href="{% url 'notes:edit' note.pk %}" class="btn-icon" title="Edit">✎</a>
+                <a href="{% url 'notes:delete' note.pk %}" class="btn-icon danger" title="Delete">🗑</a>
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+<p id="noNotesFound" class="empty-state" style="display:none;">No notes match your search.</p>
+
+<nav class="pagination" aria-label="Pagination">
+    {% if page_obj.has_previous %}
+        <a class="page-btn" href="?{% query_transform page=page_obj.previous_page_number %}">&laquo; Prev</a>
+    {% endif %}
+    <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+        <a class="page-btn" href="?{% query_transform page=page_obj.next_page_number %}">Next &raquo;</a>
+    {% endif %}
+</nav>
+{% else %}
+<div class="empty-block">
+    <div class="empty-icon">✎</div>
+    <h3>No notes yet</h3>
+    <p>Capture your first study note.</p>
+    <a href="{% url 'notes:create' %}" class="btn btn-primary">+ Add Note</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/notes-search.js' %}"></script>
+{% endblock %}

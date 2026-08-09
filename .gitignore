@@ -1,0 +1,44 @@
+# ---- Secrets / environment ----
+.env
+*.env
+!.env.example
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ---- Virtual environments ----
+venv/
+env/
+.venv/
+ENV/
+
+# ---- Django ----
+db.sqlite3
+db.sqlite3-journal
+*.log
+staticfiles/
+media/
+
+# Keep the media folder in the repo but ignore uploaded files
+!media/.gitkeep
+
+# ---- IDE / editor ----
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# ---- Coverage / testing ----
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/

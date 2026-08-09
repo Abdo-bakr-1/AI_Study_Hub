@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server error</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="auth-shell">
+        <main class="auth-main">
+            <div class="error-page">
+                <div class="error-code">500</div>
+                <h2>Something went wrong</h2>
+                <p>We hit an unexpected error. Please try again in a moment.</p>
+                <a href="/" class="btn btn-primary">Go home</a>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

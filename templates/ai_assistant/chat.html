@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Assistant — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}AI Study Assistant{% endblock %}
+{% block nav_ai %}active{% endblock %}
+
+{% block content %}
+<div class="chat-layout">
+    <!-- Conversations sidebar -->
+    <aside class="chat-conversations">
+        <form method="post" action="{% url 'ai_assistant:new' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-block">+ New conversation</button>
+        </form>
+        <ul class="conversation-list">
+            {% for conv in conversations %}
+            <li class="conversation-item {% if conversation and conv.pk == conversation.pk %}active{% endif %}">
+                <a href="{% url 'ai_assistant:conversation' conv.pk %}" class="conversation-link">
+                    {{ conv.title|default:"New conversation"|truncatechars:28 }}
+                </a>
+                <form method="post" action="{% url 'ai_assistant:delete' conv.pk %}"
+                      onsubmit="return confirm('Delete this conversation?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-icon danger" title="Delete">🗑</button>
+                </form>
+            </li>
+            {% empty %}
+            <li class="muted conversation-empty">No conversations yet.</li>
+            {% endfor %}
+        </ul>
+    </aside>
+
+    <!-- Chat panel -->
+    <section class="chat-panel card">
+        <header class="chat-header">
+            <div>
+                <h3 class="chat-title">{{ conversation.title|default:"AI Study Assistant" }}</h3>
+                <span class="chat-subtitle">Ask about concepts, errors, study plans, flashcards…</span>
+            </div>
+            {% if conversation %}
+            <form method="post" action="{% url 'ai_assistant:clear' conversation.pk %}"
+                  onsubmit="return confirm('Clear all messages in this conversation?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-ghost btn-sm">Clear</button>
+            </form>
+            {% endif %}
+        </header>
+
+        <div class="chat-messages" id="chatMessages">
+            {% for msg in chat_messages %}
+            <div class="chat-bubble-row {{ msg.sender }}">
+                <div class="chat-bubble">
+                    <div class="bubble-role">{% if msg.sender == 'user' %}You{% else %}AI{% endif %}</div>
+                    <div class="bubble-text">{{ msg.message|linebreaksbr }}</div>
+                    <div class="bubble-time">{{ msg.created_at|date:"H:i" }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="chat-empty" id="chatEmpty">
+                <div class="chat-empty-icon">✦</div>
+                <h3>Start a conversation</h3>
+                <p>Try: <em>"Explain Django MVT"</em> or <em>"Make a 5-day study plan for SQL"</em>.</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="chat-error" id="chatError" style="display:none;"></div>
+
+        <form class="chat-input-bar" id="chatForm"
+              method="post"
+              action="{% if conversation %}{% url 'ai_assistant:send' conversation.pk %}{% else %}{% url 'ai_assistant:send_new' %}{% endif %}"
+              data-conversation-url="{% url 'ai_assistant:chat' %}">
+            {% csrf_token %}
+            <textarea name="message" id="chatInput" class="chat-input" rows="1"
+                      placeholder="Type your message…" required></textarea>
+            <button type="submit" class="btn btn-primary chat-send" id="chatSend">
+                <span class="send-label">Send</span>
+                <span class="send-spinner" style="display:none;">…</span>
+            </button>
+        </form>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/chat.js' %}"></script>
+{% endblock %}

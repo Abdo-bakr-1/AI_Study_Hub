@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Profile — {{ SITE_NAME }}{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block nav_profile %}active{% endblock %}
+
+{% block content %}
+<div class="profile-grid">
+    <aside class="profile-card card">
+        <img src="{{ profile.image_url }}" alt="Profile image" class="profile-avatar">
+        <h2 class="profile-name">{{ user.get_full_name|default:user.username }}</h2>
+        <p class="profile-email">{{ user.email }}</p>
+        {% if profile.bio %}<p class="profile-bio">{{ profile.bio }}</p>{% endif %}
+        <ul class="profile-meta">
+            {% if profile.phone %}<li><strong>Phone:</strong> {{ profile.phone }}</li>{% endif %}
+            <li><strong>Joined:</strong> {{ user.date_joined|date:"M d, Y" }}</li>
+        </ul>
+        <a href="{% url 'accounts:change_password' %}" class="btn btn-outline btn-block">Change password</a>
+    </aside>
+
+    <section class="card">
+        <h3 class="card-title">Edit profile</h3>
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            <div class="form-row">
+                {% for field in user_form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                </div>
+                {% endfor %}
+            </div>
+            {% for field in profile_form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<small class="form-help">{{ field.help_text }}</small>{% endif %}
+                {{ field.errors }}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Save changes</button>
+        </form>
+    </section>
+</div>
+{% endblock %}
