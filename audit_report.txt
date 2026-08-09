@@ -1,0 +1,128 @@
+================================================================
+AI STUDY HUB — FULL PROJECT AUDIT REPORT
+================================================================
+Date: 2026-08-09
+Project: Django + PostgreSQL (accounts, core, dashboard, planner,
+         notes, resources, ai_assistant)
+================================================================
+
+----------------------------------------------------------------
+1. PROBLEMS FOUND
+----------------------------------------------------------------
+
+[A] Production-breaking bugs
+1. core/views.py — custom 404/403/500 handlers rendered
+   "errors/404.html" / "errors/403.html" / "errors/500.html", but
+   those templates do not exist. With DEBUG=False, any 404/403/500
+   cascaded into "TemplateDoesNotExist errors/500.html" (verified).
+   The real templates live at templates/{404,403,500}.html.
+
+2. templates/notes/note_list.html — uses {% static %} in the
+   extra_js block without {% load static %}, so /notes/ raised a
+   TemplateSyntaxError (500). Only caught by actually rendering the
+   page; manage.py check does not detect it.
+
+[B] Functional bugs
+3. dashboard/views.py vs static/js/charts.js — the view emitted
+   nested JSON (task_status, task_priority, notes_by_category) but the
+   JS reads flat keys (completed_tasks, pending_tasks,
+   priority_low/medium/high, notes_categories, notes_category_counts).
+   All dashboard charts always showed "No data yet."
+
+4. ai_assistant/views.py — AI history excluded EVERY past message
+   whose text matched the new one, instead of only excluding the just
+   created message. Repeating a question silently dropped older
+   duplicates from the AI context.
+
+5. smoke_test.py — used django.test.Client whose default host
+   "testserver" is not in ALLOWED_HOSTS (every request returned 400),
+   and two URLs were wrong: /export/notes/pdf/ (real:
+   /notes/export/pdf/) and /ai-chat/new/send/ (real: /ai-chat/send/).
+
+[C] Security issues
+6. accounts/views.py — the login ?next= parameter was passed straight
+   to redirect(), an open redirect (verified that
+   ?next=https://evil.example.com followed the off-site URL after
+   login).
+
+7. templates/dashboard/home.html — {{ charts_json|safe }} inside a
+   <script> block is a stored-XSS vector: a category name such as
+   "</script><script>..." can break out of the JSON block.
+
+[D] Minor issues
+8. config/settings.py — conflicting DEBUG defaults
+   (environ.Env(DEBUG=(bool, False)) vs env.bool("DEBUG",
+   default=True)); a missing .env would run the app in development
+   mode.
+9. accounts/models.py Profile.image_url referenced
+   /static/images/default-avatar.svg, which did not exist -> broken
+   avatar image.
+
+----------------------------------------------------------------
+2. PROBLEMS FIXED
+----------------------------------------------------------------
+All of the above were fixed (9 fixes). Root cause was determined
+before each fix. Architecture and intended behavior were preserved.
+
+----------------------------------------------------------------
+3. FILES CHANGED
+----------------------------------------------------------------
+1. core/views.py                 - corrected error-handler template names
+2. templates/notes/note_list.html - added {% load static %}
+3. dashboard/views.py            - flat chart keys matching charts.js
+4. templates/dashboard/home.html - json_script filter (XSS-safe data)
+5. ai_assistant/views.py         - history excludes message by pk
+6. accounts/views.py             - open-redirect guard on ?next=
+7. config/settings.py            - DEBUG now defaults to False
+8. smoke_test.py                 - allow testserver host + fixed URLs
+9. static/images/default-avatar.svg  (NEW) - default avatar asset
+
+----------------------------------------------------------------
+4. COMMANDS / TESTS EXECUTED
+----------------------------------------------------------------
+- python manage.py check                     -> no issues (0 silenced)
+- python manage.py makemigrations --check --dry-run
+                                             -> no changes detected
+- python manage.py test                      -> 0 tests ran (all
+   tests.py files are empty placeholders)
+- python smoke_test.py                       -> all pages 200,
+   PDF export -> application/pdf, AI send -> application/json
+- Manual functional test: full CRUD + per-user isolation
+   (task/note/resource create -> edit -> toggle -> delete, categories,
+   chat send/detail/clear). All pass; cross-user access correctly
+   returns 404.
+- Production-mode (DEBUG=False) verification:
+     - 404/403/500 handlers render correctly (no exception)
+     - open-redirect guard blocks external ?next=
+     - dashboard charts JSON contains the expected flat keys
+     - collectstatic --dry-run includes the new avatar SVG
+
+----------------------------------------------------------------
+5. REMAINING ISSUES (non-blocking)
+----------------------------------------------------------------
+1. No automated tests - every tests.py is a placeholder
+   ("Ran 0 tests").
+2. docs/ is empty, but README references docs/erd.png and
+   docs/ai_study_hub_backup.sql (not fabricated).
+3. templates/includes/pagination.html is unused dead code (templates
+   inline their own pagination).
+4. Resource.thumbnail exists in the model + form but is not rendered
+   in the resource form, nor shown in list/detail templates.
+5. Profile-image validation checks size only; README claims type+size.
+6. .env holds dev-only SECRET_KEY / DB password (git-ignored) - fine
+   locally, but rotate before any real deployment.
+
+----------------------------------------------------------------
+6. READY TO RUN / BUILD / DEPLOY?
+----------------------------------------------------------------
+YES.
+
+- manage.py check is clean.
+- Migrations are in sync with models.
+- All pages, PDF export and AI chat verified working.
+- Per-user data isolation confirmed (users cannot access each other's
+  data).
+- Custom error pages now render correctly in production mode.
+
+No commits or pushes were made (as requested).
+================================================================

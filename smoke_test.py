@@ -10,8 +10,12 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
+from django.conf import settings  # noqa: E402
 from django.contrib.auth.models import User  # noqa: E402
 from django.test import Client  # noqa: E402
+
+# django.test.Client sends HTTP_HOST=testserver, which is not in ALLOWED_HOSTS.
+settings.ALLOWED_HOSTS.append("testserver")
 
 u, _ = User.objects.get_or_create(
     username="smoke_tester", defaults={"email": "smoke@example.com"}
@@ -29,7 +33,7 @@ assert c.login(username="smoke_tester", password="SmokePass123!"), "login failed
 paths = [
     "/dashboard/", "/tasks/", "/tasks/add/", "/notes/", "/notes/add/",
     "/resources/", "/resources/add/", "/profile/", "/profile/password/",
-    "/ai-chat/", "/export/notes/pdf/",
+    "/ai-chat/", "/notes/export/pdf/",
 ]
 for path in paths:
     r = c.get(path)
@@ -37,7 +41,7 @@ for path in paths:
     print(f"{path}: {r.status_code} ({ctype})")
 
 # Exercise an AI chat send (uses offline fallback when AI_API_KEY is empty).
-r = c.post("/ai-chat/new/send/", {"message": "Explain Django MVT in one line."},
+r = c.post("/ai-chat/send/", {"message": "Explain Django MVT in one line."},
            HTTP_X_REQUESTED_WITH="XMLHttpRequest")
 print("ai send:", r.status_code, r.get("Content-Type", "")[:30])
 

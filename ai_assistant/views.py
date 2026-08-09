@@ -88,7 +88,7 @@ def send_message(request, pk=None):
     user_text = form.cleaned_data["message"]
 
     # Persist the user message.
-    Message.objects.create(
+    user_message = Message.objects.create(
         conversation=conversation,
         sender=Message.Sender.USER,
         message=user_text,
@@ -101,8 +101,9 @@ def send_message(request, pk=None):
     else:
         conversation.save(update_fields=["updated_at"])
 
-    # Build recent history for the provider.
-    history_qs = conversation.messages.exclude(message=user_text).order_by(
+    # Build recent history for the provider (everything except the message
+    # just persisted, so repeated text isn't dropped from context).
+    history_qs = conversation.messages.exclude(pk=user_message.pk).order_by(
         "created_at"
     )[:HISTORY_LIMIT]
     history = [(m.sender, m.message) for m in history_qs]

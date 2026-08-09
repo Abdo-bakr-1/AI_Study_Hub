@@ -1,0 +1,44 @@
+# Render Blueprint — one-click deploy for AI Study Hub.
+# From the Render dashboard: "New +" → "Blueprint" → connect this repo.
+# A free PostgreSQL database is created and its DATABASE_URL is injected
+# automatically into the web service.
+
+databases:
+  - name: ai-study-hub-db
+    plan: free
+    databaseName: ai_study_hub
+
+services:
+  - type: web
+    name: ai-study-hub
+    runtime: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    healthCheckPath: /
+    envVars:
+      # SECRET_KEY is generated once on first deploy; DEBUG stays off.
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "ai-study-hub.onrender.com,localhost,127.0.0.1"
+      # AI assistant (Groq) — set AI_API_KEY manually in the dashboard:
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_API_BASE_URL
+        value: "https://api.groq.com/openai/v1"
+      - key: AI_MODEL
+        value: "llama-3.3-70b-versatile"
+      - key: AI_REQUEST_TIMEOUT
+        value: "30"
+      - key: AI_MAX_TOKENS
+        value: "800"
+      # Email verification / reset links print to logs (console backend).
+      - key: EMAIL_BACKEND
+        value: "django.core.mail.backends.console.EmailBackend"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-study-hub-db
+          property: connectionString

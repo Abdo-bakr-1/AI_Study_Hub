@@ -13,9 +13,7 @@ import environ
 # ---------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env = environ.Env(
-    DEBUG=(bool, False),
-)
+env = environ.Env()
 
 # Read .env file if present (never committed to git).
 environ.Env.read_env(BASE_DIR / ".env")
@@ -25,7 +23,9 @@ SECRET_KEY = env(
     default="django-insecure-change-me-in-production-0123456789abcdef",
 )
 
-DEBUG = env.bool("DEBUG", default=True)
+# DEBUG defaults to False so a missing .env can't accidentally run in
+# development mode. Set DEBUG=True explicitly in .env during development.
+DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = env.list(
     "ALLOWED_HOSTS",
@@ -59,6 +59,7 @@ INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -94,6 +95,8 @@ WSGI_APPLICATION = "config.wsgi.application"
 # The project targets PostgreSQL. For convenience during evaluation, if the
 # environment variable USE_SQLITE=True is set (or PostgreSQL is unreachable and
 # no DB env vars are given), a SQLite fallback keeps the app runnable.
+# On Render, the platform injects a full DATABASE_URL connection string — the
+# app prefers that over the individual DB_* variables used for local dev.
 if env.bool("USE_SQLITE", default=False):
     DATABASES = {
         "default": {
@@ -101,6 +104,8 @@ if env.bool("USE_SQLITE", default=False):
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+elif env("DATABASE_URL", default=""):
+    DATABASES = {"default": env.db("DATABASE_URL")}
 else:
     DATABASES = {
         "default": {
@@ -146,6 +151,13 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# WhiteNoise serves collected static files in production (no nginx needed).
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -194,6 +206,10 @@ SESSION_COOKIE_HTTPONLY = True
 X_FRAME_OPTIONS = "DENY"
 
 if not DEBUG:
+    # Render terminates TLS at its proxy and forwards X-Forwarded-Proto; this
+    # tells Django the request is already HTTPS so SECURE_SSL_REDIRECT doesn't
+    # create a redirect loop.
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True

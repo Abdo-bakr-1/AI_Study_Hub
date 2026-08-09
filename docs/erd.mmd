@@ -1,0 +1,23 @@
+erDiagram
+    auth_user ||--o| accounts_profile : "user (1:1)"
+    auth_user ||--o{ accounts_emailverification : "email_verifications"
+    auth_user ||--o{ accounts_passwordresettoken : "password_reset_tokens"
+    auth_user ||--o{ core_activitylog : "activity_logs"
+
+    auth_user ||--o{ planner_task : "tasks"
+    auth_user ||--o{ planner_taskcategory : "task_categories"
+    planner_task ||--o{ planner_task_categories : "M2M"
+    planner_taskcategory ||--o{ planner_task_categories : "M2M"
+
+    auth_user ||--o{ notes_note : "notes"
+    auth_user ||--o{ notes_notecategory : "note_categories"
+    notes_note ||--o{ notes_note_categories : "M2M"
+    notes_notecategory ||--o{ notes_note_categories : "M2M"
+
+    auth_user ||--o{ resources_resource : "resources"
+    auth_user ||--o{ resources_resourcecategory : "resource_categories"
+    resources_resource ||--o{ resources_resource_categories : "M2M"
+    resources_resourcecategory ||--o{ resources_resource_categories : "M2M"
+
+    auth_user ||--o{ ai_assistant_conversation : "conversations"
+    ai_assistant_conversation ||--o{ ai_assistant_message : "messages"

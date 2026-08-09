@@ -60,23 +60,15 @@ def home(request):
     # --- Recent activity -------------------------------------------------
     recent_activity = ActivityLog.objects.filter(user=user)[:10]
 
+    # Flat keys consumed by static/js/charts.js.
     charts = {
-        "task_status": {
-            "labels": ["Completed", "Pending"],
-            "values": [completed_tasks, pending_tasks],
-        },
-        "task_priority": {
-            "labels": ["Low", "Medium", "High"],
-            "values": [
-                priority_counts["low"],
-                priority_counts["medium"],
-                priority_counts["high"],
-            ],
-        },
-        "notes_by_category": {
-            "labels": notes_by_category_labels,
-            "values": notes_by_category_values,
-        },
+        "completed_tasks": completed_tasks,
+        "pending_tasks": pending_tasks,
+        "priority_low": priority_counts["low"],
+        "priority_medium": priority_counts["medium"],
+        "priority_high": priority_counts["high"],
+        "notes_categories": notes_by_category_labels,
+        "notes_category_counts": notes_by_category_values,
     }
 
     context = {

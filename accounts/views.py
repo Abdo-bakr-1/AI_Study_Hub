@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import (
     LoginForm,
@@ -75,7 +76,14 @@ def login_view(request):
         if form.is_valid():
             login(request, form.get_user())
             messages.success(request, f"Welcome back, {request.user.username}!")
+            # Only allow same-site "next" targets to avoid open redirects.
             next_url = request.GET.get("next")
+            if not url_has_allowed_host_and_scheme(
+                next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            ):
+                next_url = None
             return redirect(next_url or "dashboard:home")
         # Distinguish an unverified (inactive) account for a friendlier message.
         username = request.POST.get("username", "")
