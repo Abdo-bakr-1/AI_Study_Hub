@@ -1,5 +1,6 @@
 """Authentication, profile, email verification and password reset views."""
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -32,13 +33,22 @@ def register(request):
             user = form.save()
             Profile.objects.get_or_create(user=user)
             verification = EmailVerification.objects.create(user=user)
-            send_verification_email(request, user, verification)
-            messages.success(
-                request,
-                "Account created! Check your email to verify your account "
-                "before logging in. (In development the link is printed to "
-                "the server console.)",
-            )
+            if settings.EMAIL_VERIFICATION_REQUIRED:
+                send_verification_email(request, user, verification)
+                messages.success(
+                    request,
+                    "Account created! Check your email to verify your account "
+                    "before logging in. (In development the link is printed to "
+                    "the server console.)",
+                )
+            else:
+                # Verification disabled (e.g. live demo without SMTP): the
+                # account is usable immediately.
+                verification.is_verified = True
+                verification.save(update_fields=["is_verified"])
+                user.is_active = True
+                user.save(update_fields=["is_active"])
+                messages.success(request, "Account created! You can now log in.")
             return redirect("accounts:login")
     else:
         form = RegisterForm()

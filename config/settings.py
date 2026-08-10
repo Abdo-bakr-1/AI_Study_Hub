@@ -186,6 +186,13 @@ EMAIL_BACKEND = env(
     "EMAIL_BACKEND",
     default="django.core.mail.backends.console.EmailBackend",
 )
+# Email verification is enabled in development (DEBUG) so the flow can be
+# demoed (the link prints to the console backend). In a non-DEBUG deployment
+# without a real SMTP backend (e.g. the demo on Railway), new accounts are
+# active immediately. Override explicitly via EMAIL_VERIFICATION_REQUIRED.
+EMAIL_VERIFICATION_REQUIRED = env.bool(
+    "EMAIL_VERIFICATION_REQUIRED", default=DEBUG
+)
 EMAIL_HOST = env("EMAIL_HOST", default="localhost")
 EMAIL_PORT = env.int("EMAIL_PORT", default=25)
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
