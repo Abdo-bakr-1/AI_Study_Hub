@@ -153,7 +153,13 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # WhiteNoise serves collected static files in production (no nginx needed).
+# "default" must stay defined here too — overriding STORAGES at all replaces
+# Django's built-in default, so omitting it breaks uploaded-file URLs
+# (e.g. {{ user.profile.image_url }} → InvalidStorageError).
 STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
