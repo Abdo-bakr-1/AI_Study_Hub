@@ -1,0 +1,12 @@
+# Keep the build context (and image) small and free of secrets.
+venv/
+.git/
+.env
+*.pyc
+__pycache__/
+staticfiles/
+media/
+db.sqlite3
+erorr.png
+test.md
+docs/
