@@ -155,3 +155,13 @@ class SetNewPasswordForm(forms.Form):
         if p1 and len(p1) < 8:
             raise forms.ValidationError("Password must be at least 8 characters.")
         return cleaned
+
+
+class ResendVerificationForm(forms.Form):
+    """Ask for the email address to resend a verification link to."""
+
+    email = forms.EmailField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        _style(self.fields)

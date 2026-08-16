@@ -29,7 +29,7 @@ DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = env.list(
     "ALLOWED_HOSTS",
-    default=["localhost", "127.0.0.1", "0.0.0.0"],
+    default=["localhost", "127.0.0.1", "0.0.0.0", ".railway.app", ".up.railway.app"],
 )
 
 # ---------------------------------------------------------------------------
@@ -181,18 +181,24 @@ LOGOUT_REDIRECT_URL = "accounts:login"
 # Email
 # ---------------------------------------------------------------------------
 # Console backend by default so email verification / password reset links are
-# printed to the terminal during development. Configure SMTP in .env for prod.
+# printed to the terminal during development. For production, configure the
+# Brevo API key (recommended) or an SMTP backend.
 EMAIL_BACKEND = env(
     "EMAIL_BACKEND",
     default="django.core.mail.backends.console.EmailBackend",
 )
-# Email verification is enabled in development (DEBUG) so the flow can be
-# demoed (the link prints to the console backend). In a non-DEBUG deployment
-# without a real SMTP backend (e.g. the demo on Railway), new accounts are
-# active immediately. Override explicitly via EMAIL_VERIFICATION_REQUIRED.
+# Email verification is REQUIRED by default in production for security.
+# In development (DEBUG=True), it defaults to True so the flow works via
+# console backend. Override via EMAIL_VERIFICATION_REQUIRED environment
+# variable if you explicitly need to disable it (e.g., demo without SMTP).
 EMAIL_VERIFICATION_REQUIRED = env.bool(
-    "EMAIL_VERIFICATION_REQUIRED", default=DEBUG
+    "EMAIL_VERIFICATION_REQUIRED", default=True
 )
+
+# Brevo API (preferred for production - no SMTP timeout issues)
+BREVO_API_KEY = env("BREVO_API_KEY", default="")
+
+# Legacy SMTP settings (kept for fallback compatibility if needed)
 EMAIL_HOST = env("EMAIL_HOST", default="localhost")
 EMAIL_PORT = env.int("EMAIL_PORT", default=25)
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")

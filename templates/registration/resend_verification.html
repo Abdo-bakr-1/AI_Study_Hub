@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 
-{% block title %}Register — {{ SITE_NAME }}{% endblock %}
+{% block title %}Resend Verification — {{ SITE_NAME }}{% endblock %}
 
 {% block auth_content %}
 <div class="auth-card">
-    <h1 class="auth-title">Create your account</h1>
-    <p class="auth-subtitle">Start organizing your study life today</p>
+    <h1 class="auth-title">Resend verification email</h1>
+    <p class="auth-subtitle">Enter your email to receive a new verification link</p>
 
     <form method="post" novalidate>
         {% csrf_token %}
@@ -20,12 +20,11 @@
             {{ field.errors }}
         </div>
         {% endfor %}
-        <button type="submit" class="btn btn-primary btn-block">Create account</button>
+        <button type="submit" class="btn btn-primary btn-block">Resend verification</button>
     </form>
 
     <div class="auth-links">
         <span>Already have an account? <a href="{% url 'accounts:login' %}">Log in</a></span>
-        <span>Didn't receive email? <a href="{% url 'accounts:resend_verification' %}">Resend verification</a></span>
     </div>
 </div>
 {% endblock %}

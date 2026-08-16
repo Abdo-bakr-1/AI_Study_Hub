@@ -28,6 +28,7 @@
     <div class="auth-links">
         <a href="{% url 'accounts:password_reset_request' %}">Forgot password?</a>
         <span>New here? <a href="{% url 'accounts:register' %}">Create an account</a></span>
+        <span>Didn't receive email? <a href="{% url 'accounts:resend_verification' %}">Resend verification</a></span>
     </div>
 </div>
 {% endblock %}

@@ -15,6 +15,7 @@ from .forms import (
     PasswordResetRequestForm,
     ProfileForm,
     RegisterForm,
+    ResendVerificationForm,
     SetNewPasswordForm,
     StyledPasswordChangeForm,
     UserForm,
@@ -34,13 +35,21 @@ def register(request):
             Profile.objects.get_or_create(user=user)
             verification = EmailVerification.objects.create(user=user)
             if settings.EMAIL_VERIFICATION_REQUIRED:
-                send_verification_email(request, user, verification)
-                messages.success(
-                    request,
-                    "Account created! Check your email to verify your account "
-                    "before logging in. (In development the link is printed to "
-                    "the server console.)",
-                )
+                email_sent = send_verification_email(request, user, verification)
+                if email_sent:
+                    messages.success(
+                        request,
+                        "Account created! Check your email to verify your account "
+                        "before logging in.",
+                    )
+                else:
+                    # Email failed to send - keep user inactive, inform them
+                    messages.error(
+                        request,
+                        "Account created, but we couldn't send the verification email. "
+                        "Please try again later or contact support. Your account "
+                        "will remain inactive until verified.",
+                    )
             else:
                 # Verification disabled (e.g. live demo without SMTP): the
                 # account is usable immediately.
@@ -75,6 +84,67 @@ def verify_email(request, token):
     user.save(update_fields=["is_active"])
     messages.success(request, "Email verified! You can now log in.")
     return redirect("accounts:login")
+
+
+def resend_verification(request):
+    """Resend a verification email for an unverified account.
+
+    A simple rate limit (cooldown) prevents email spam.
+    """
+    if request.user.is_authenticated:
+        return redirect("dashboard:home")
+
+    if request.method == "POST":
+        form = ResendVerificationForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            user = User.objects.filter(
+                email__iexact=email, is_active=False
+            ).first()
+            if user:
+                # Find the latest pending verification record.
+                pending = (
+                    EmailVerification.objects.filter(user=user, is_verified=False)
+                    .order_by("-created_at")
+                    .first()
+                )
+                # Rate limit: only resend if last attempt was > 60s ago.
+                if pending and not pending.is_expired:
+                    age = (timezone.now() - pending.created_at).total_seconds()
+                    if age < 60:
+                        messages.warning(
+                            request,
+                            "Please wait a moment before requesting another "
+                            "verification email.",
+                        )
+                        return redirect("accounts:login")
+
+                # Invalidate old pending tokens, create a fresh one.
+                EmailVerification.objects.filter(
+                    user=user, is_verified=False
+                ).update(is_verified=True)
+                verification = EmailVerification.objects.create(user=user)
+                send_verification_email(request, user, verification)
+                messages.success(
+                    request,
+                    "If an account exists for that email, a new verification "
+                    "link has been sent.",
+                )
+            else:
+                # Always show the same message to avoid leaking emails.
+                messages.success(
+                    request,
+                    "If an account exists for that email, a new verification "
+                    "link has been sent.",
+                )
+            return redirect("accounts:login")
+    else:
+        form = ResendVerificationForm()
+    return render(
+        request,
+        "registration/resend_verification.html",
+        {"form": form},
+    )
 
 
 def login_view(request):
@@ -166,7 +236,13 @@ def password_reset_request(request):
             user = User.objects.filter(email__iexact=email).first()
             if user:
                 token = PasswordResetToken.objects.create(user=user)
-                send_password_reset_email(request, user, token)
+                email_sent = send_password_reset_email(request, user, token)
+                if not email_sent:
+                    messages.error(
+                        request,
+                        "We encountered an issue sending the reset email. "
+                        "Please try again later.",
+                    )
             # Always show the same message to avoid leaking which emails exist.
             messages.success(
                 request,
