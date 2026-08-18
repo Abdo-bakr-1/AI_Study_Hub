@@ -216,8 +216,8 @@ AI_API_BASE_URL = env(
     "AI_API_BASE_URL",
     default="https://generativelanguage.googleapis.com/v1beta/openai",
 )
-AI_MODEL = env("AI_MODEL", default="gemini-2.0-flash")
-AI_REQUEST_TIMEOUT = env.int("AI_REQUEST_TIMEOUT", default=30)
+AI_MODEL = env("AI_MODEL", default="gemini-3.6-flash")
+AI_REQUEST_TIMEOUT = env.int("AI_REQUEST_TIMEOUT", default=60)
 AI_MAX_TOKENS = env.int("AI_MAX_TOKENS", default=800)
 
 # ---------------------------------------------------------------------------

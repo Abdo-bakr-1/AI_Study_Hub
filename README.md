@@ -149,8 +149,8 @@ psql -U postgres -c "CREATE DATABASE ai_study_hub OWNER studyhub;"
 | `DEFAULT_FROM_EMAIL` | From address for verification / reset emails. |
 | `AI_API_KEY` | API key for the AI provider. **Leave blank to use the offline fallback assistant.** |
 | `AI_API_BASE_URL` | Base URL of an OpenAI-compatible API (default Gemini `https://generativelanguage.googleapis.com/v1beta/openai`). |
-| `AI_MODEL` | Model name (e.g. `gemini-2.0-flash`). |
-| `AI_REQUEST_TIMEOUT` | Request timeout in seconds. |
+| `AI_MODEL` | Model name (e.g. `gemini-3.6-flash`). |
+| `AI_REQUEST_TIMEOUT` | Request timeout in seconds (default 60 for Gemini). |
 | `AI_MAX_TOKENS` | Max tokens for the AI response. |
 
 Secrets are **never** hard-coded — everything sensitive is read from `.env`, which is git-ignored.
@@ -166,7 +166,8 @@ The assistant talks to any **OpenAI-compatible Chat Completions** endpoint throu
    ```env
    AI_API_KEY=your_key_here
    AI_API_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-   AI_MODEL=gemini-2.0-flash
+   AI_MODEL=gemini-3.6-flash
+   AI_REQUEST_TIMEOUT=60
    ```
 3. Restart the server.
 
