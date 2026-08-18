@@ -160,7 +160,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Media storage: use Backblaze B2 (S3-compatible) when configured,
 # otherwise fall back to local filesystem for development.
 if env("AWS_STORAGE_BUCKET_NAME", default=""):
-    # Production: Backblaze B2 / S3-compatible storage
+    # Production: Backblaze B2 / S3-compatible storage (PRIVATE bucket)
+    # Uses presigned URLs for secure browser access.
     STORAGES = {
         "default": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
@@ -169,8 +170,9 @@ if env("AWS_STORAGE_BUCKET_NAME", default=""):
                 "secret_key": env("AWS_SECRET_ACCESS_KEY"),
                 "bucket_name": env("AWS_STORAGE_BUCKET_NAME"),
                 "endpoint_url": env("AWS_S3_ENDPOINT_URL"),
-                "default_acl": "public-read",
-                "querystring_auth": False,
+                "default_acl": "private",
+                "querystring_auth": True,
+                "querystring_expire": 3600,  # 1 hour URL validity
                 "file_overwrite": False,
             },
         },
@@ -178,7 +180,8 @@ if env("AWS_STORAGE_BUCKET_NAME", default=""):
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
-    # Media URL points to the B2 bucket public endpoint
+    # MEDIA_URL points to the B2 bucket endpoint; S3Boto3Storage generates
+    # presigned URLs that include authentication in the query string.
     MEDIA_URL = f"https://{env('AWS_STORAGE_BUCKET_NAME')}.{env('AWS_S3_ENDPOINT_URL').replace('https://', '').replace('http://', '')}/"
 else:
     # Development: local filesystem storage
