@@ -156,17 +156,42 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # "default" must stay defined here too — overriding STORAGES at all replaces
 # Django's built-in default, so omitting it breaks uploaded-file URLs
 # (e.g. {{ user.profile.image_url }} → InvalidStorageError).
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
 
-MEDIA_URL = "media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# Media storage: use Backblaze B2 (S3-compatible) when configured,
+# otherwise fall back to local filesystem for development.
+if env("AWS_STORAGE_BUCKET_NAME", default=""):
+    # Production: Backblaze B2 / S3-compatible storage
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "access_key": env("AWS_ACCESS_KEY_ID"),
+                "secret_key": env("AWS_SECRET_ACCESS_KEY"),
+                "bucket_name": env("AWS_STORAGE_BUCKET_NAME"),
+                "endpoint_url": env("AWS_S3_ENDPOINT_URL"),
+                "default_acl": "public-read",
+                "querystring_auth": False,
+                "file_overwrite": False,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    # Media URL points to the B2 bucket public endpoint
+    MEDIA_URL = f"https://{env('AWS_STORAGE_BUCKET_NAME')}.{env('AWS_S3_ENDPOINT_URL').replace('https://', '').replace('http://', '')}/"
+else:
+    # Development: local filesystem storage
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    MEDIA_URL = "media/"
+    MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
