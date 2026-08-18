@@ -2,8 +2,9 @@
 
 This module isolates all communication with the AI provider so views never
 talk to the provider directly. It targets any OpenAI-compatible Chat
-Completions endpoint (OpenAI, Groq, OpenRouter, local servers, ...), which is
-configured entirely through environment variables (see ``config/settings.py``).
+Completions endpoint (Google Gemini, OpenAI, Groq, OpenRouter, local
+servers, ...), which is configured entirely through environment variables
+(see ``config/settings.py``).
 
 If no API key is configured the service returns a helpful offline fallback
 response so the application remains fully runnable during development and

@@ -148,8 +148,8 @@ psql -U postgres -c "CREATE DATABASE ai_study_hub OWNER studyhub;"
 | `EMAIL_HOST` / `EMAIL_PORT` / `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` / `EMAIL_USE_TLS` | SMTP settings. |
 | `DEFAULT_FROM_EMAIL` | From address for verification / reset emails. |
 | `AI_API_KEY` | API key for the AI provider. **Leave blank to use the offline fallback assistant.** |
-| `AI_API_BASE_URL` | Base URL of an OpenAI-compatible API (default `https://api.openai.com/v1`). |
-| `AI_MODEL` | Model name (e.g. `gpt-3.5-turbo`). |
+| `AI_API_BASE_URL` | Base URL of an OpenAI-compatible API (default Gemini `https://generativelanguage.googleapis.com/v1beta/openai`). |
+| `AI_MODEL` | Model name (e.g. `gemini-2.0-flash`). |
 | `AI_REQUEST_TIMEOUT` | Request timeout in seconds. |
 | `AI_MAX_TOKENS` | Max tokens for the AI response. |
 
@@ -161,12 +161,12 @@ Secrets are **never** hard-coded — everything sensitive is read from `.env`, w
 
 The assistant talks to any **OpenAI-compatible Chat Completions** endpoint through the service layer in `ai_assistant/services.py`.
 
-1. Get an API key from your provider (e.g. OpenAI, Groq, OpenRouter).
+1. Get an API key from your provider (e.g. Google Gemini, OpenAI, Groq, OpenRouter).
 2. Set in `.env`:
    ```env
-   AI_API_KEY=sk-...your key...
-   AI_API_BASE_URL=https://api.openai.com/v1
-   AI_MODEL=gpt-3.5-turbo
+   AI_API_KEY=your_key_here
+   AI_API_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+   AI_MODEL=gemini-2.0-flash
    ```
 3. Restart the server.
 

@@ -212,8 +212,11 @@ DEFAULT_FROM_EMAIL = env(
 # AI provider configuration (never hard-code secrets)
 # ---------------------------------------------------------------------------
 AI_API_KEY = env("AI_API_KEY", default="")
-AI_API_BASE_URL = env("AI_API_BASE_URL", default="https://api.openai.com/v1")
-AI_MODEL = env("AI_MODEL", default="gpt-3.5-turbo")
+AI_API_BASE_URL = env(
+    "AI_API_BASE_URL",
+    default="https://generativelanguage.googleapis.com/v1beta/openai",
+)
+AI_MODEL = env("AI_MODEL", default="gemini-2.0-flash")
 AI_REQUEST_TIMEOUT = env.int("AI_REQUEST_TIMEOUT", default=30)
 AI_MAX_TOKENS = env.int("AI_MAX_TOKENS", default=800)
 
